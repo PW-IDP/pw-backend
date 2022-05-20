@@ -32,7 +32,7 @@ public class UserController {
             } else {
                 String identity = jwtDecoder.decode(jwt.substring(7)).getSubject();
                 if (this.userService.isPresent(identity)) {
-                    response.put("user_id", this.userService.findIdByIdentity(identity));
+                    response.put("message", "User already saved!");
                     return ResponseEntity.status(HttpStatus.OK).body(response);
                 } else {
                     String email = String.valueOf(request.get("email"));
@@ -44,7 +44,7 @@ public class UserController {
                     user.setName(name);
 
                     userService.save(user);
-                    response.put("user_id", user.getId());
+                    response.put("message", "User saved successfully!");
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
                 }
             }

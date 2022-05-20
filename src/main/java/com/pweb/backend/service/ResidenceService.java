@@ -3,7 +3,9 @@ package com.pweb.backend.service;
 import com.pweb.backend.model.Residence;
 import com.pweb.backend.repository.ResidenceRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,6 +27,19 @@ public class ResidenceService {
 
     public boolean isPresent(String name, Long userId) {
         return this.residenceRepository.findByName(name, userId).isPresent();
+    }
+
+    public List<Residence> findAllResidencesFromUser(Long userId) {
+        return this.residenceRepository.findAllResidencesFromUser(userId).orElseThrow();
+    }
+
+    public Residence findById(Long id) {
+        return this.residenceRepository.findById(id).orElse(null);
+    }
+
+    @Transactional
+    public void deleteResidence(Long id) {
+        this.residenceRepository.deleteResidence(id);
     }
 
     public void save(Residence residence) {
