@@ -5,7 +5,6 @@ import com.pweb.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class UserService {
@@ -26,6 +25,10 @@ public class UserService {
 
     public Long findIdByIdentity(String identity) {
         return this.userRepository.findByIdentity(identity).orElseThrow().getId();
+    }
+
+    public User findById(Long id) {
+        return this.userRepository.findById(id).orElseThrow();
     }
 
     public void save(User user) {
