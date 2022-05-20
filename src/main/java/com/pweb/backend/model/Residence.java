@@ -1,6 +1,7 @@
 package com.pweb.backend.model;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "residences")
@@ -31,6 +32,12 @@ public class Residence {
 
     @Column(name = "city")
     private String city;
+
+    @OneToMany(fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            mappedBy = "residence")
+    private Set<Sharing> sharings;
 
     public Long getId() {
         return id;
@@ -90,5 +97,13 @@ public class Residence {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Set<Sharing> getSharings() {
+        return sharings;
+    }
+
+    public void setSharings(Set<Sharing> sharings) {
+        this.sharings = sharings;
     }
 }

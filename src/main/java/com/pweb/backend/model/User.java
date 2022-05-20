@@ -28,6 +28,12 @@ public class User {
             mappedBy = "user")
     private Set<Residence> residences;
 
+    @OneToMany(fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            mappedBy = "guest")
+    private Set<Sharing> sharings;
+
     public Long getId() {
         return id;
     }
@@ -62,5 +68,13 @@ public class User {
 
     public void setResidences(Set<Residence> residences) {
         this.residences = residences;
+    }
+
+    public Set<Sharing> getSharings() {
+        return sharings;
+    }
+
+    public void setSharings(Set<Sharing> sharings) {
+        this.sharings = sharings;
     }
 }
