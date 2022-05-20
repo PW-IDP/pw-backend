@@ -31,18 +31,22 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             } else {
                 String identity = jwtDecoder.decode(jwt.substring(7)).getSubject();
-                String email = String.valueOf(request.get("email"));
-                String name = String.valueOf(request.get("name"));
+                if (this.userService.isPresent(identity)) {
+                    response.put("user_id", this.userService.findIdByIdentity(identity));
+                    return ResponseEntity.status(HttpStatus.OK).body(response);
+                } else {
+                    String email = String.valueOf(request.get("email"));
+                    String name = String.valueOf(request.get("name"));
 
-                User user = new User();
-                user.setIdentity(identity);
-                user.setEmail(email);
-                user.setName(name);
+                    User user = new User();
+                    user.setIdentity(identity);
+                    user.setEmail(email);
+                    user.setName(name);
 
-                userService.save(user);
-                String successfulMessage = "Saved the user successfully!";
-                response.put("message", successfulMessage);
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                    userService.save(user);
+                    response.put("user_id", user.getId());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                }
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

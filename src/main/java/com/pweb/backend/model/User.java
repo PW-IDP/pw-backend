@@ -2,6 +2,7 @@ package com.pweb.backend.model;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -20,6 +21,12 @@ public class User {
 
     @Column(name = "name")
     private String name;
+
+    @OneToMany(fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            mappedBy = "user")
+    private Set<Residence> residences;
 
     public Long getId() {
         return id;
@@ -47,5 +54,13 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Set<Residence> getResidences() {
+        return residences;
+    }
+
+    public void setResidences(Set<Residence> residences) {
+        this.residences = residences;
     }
 }
