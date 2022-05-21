@@ -40,6 +40,14 @@ public class SharingService {
         return toReturn;
     }
 
+    public List<Sharing> findBookings(Long userId) {
+        return this.sharingRepository.findBookings(userId);
+    }
+
+    public Sharing findById(Long id) {
+        return this.sharingRepository.findById(id).orElseThrow();
+    }
+
     public void save(Sharing sharing) {
         this.sharingRepository.save(sharing);
     }

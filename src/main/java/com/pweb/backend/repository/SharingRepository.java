@@ -9,7 +9,8 @@ import java.util.List;
 
 @Repository
 public interface SharingRepository extends JpaRepository<Sharing, Long> {
-
     @Query(value = "SELECT * FROM sharings s WHERE s.residence_id = :residence", nativeQuery = true)
-    public List<Sharing> findSharingsByResidence(Long residence);
+    List<Sharing> findSharingsByResidence(Long residence);
+    @Query(value = "SELECT * FROM sharings s WHERE s.user_id = :guest", nativeQuery = true)
+    List<Sharing> findBookings(Long guest);
 }

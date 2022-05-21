@@ -35,6 +35,9 @@ public class Sharing {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp endDateTime;
 
+    @Column(name = "capacity")
+    private Integer capacity;
+
 
     public Long getId() {
         return id;
@@ -87,5 +90,13 @@ public class Sharing {
 
     public void setEndDateTime(Timestamp endDateTime) {
         this.endDateTime = endDateTime;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
     }
 }

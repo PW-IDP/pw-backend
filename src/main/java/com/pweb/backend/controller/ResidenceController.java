@@ -3,6 +3,7 @@ package com.pweb.backend.controller;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import com.pweb.backend.model.Residence;
 import com.pweb.backend.model.Sharing;
+import com.pweb.backend.model.User;
 import com.pweb.backend.service.ResidenceService;
 import com.pweb.backend.service.SharingService;
 import com.pweb.backend.service.UserService;
@@ -62,7 +63,8 @@ public class ResidenceController {
                     String city = String.valueOf(request.get("city"));
 
                     Residence residence = new Residence();
-                    residence.setUser(this.userService.findById(userId));
+                    User owner = this.userService.findById(userId);
+                    residence.setUser(owner);
                     residence.setMinCapacity(minCapacity);
                     residence.setMaxCapacity(maxCapacity);
                     residence.setName(name);
@@ -70,7 +72,9 @@ public class ResidenceController {
                     residence.setCounty(county);
                     residence.setCity(city);
 
+
                     this.residenceService.save(residence);
+                    owner.getResidences().add(residence);
                     response.put("residence_id", residence.getId());
                     return ResponseEntity.status(HttpStatus.CREATED).body(response);
 

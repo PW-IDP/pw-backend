@@ -7,6 +7,7 @@ import com.pweb.backend.model.User;
 import com.pweb.backend.service.ResidenceService;
 import com.pweb.backend.service.SharingService;
 import com.pweb.backend.service.UserService;
+import com.pweb.backend.utils.TimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,6 +91,7 @@ public class SharingController {
                 sharingToAdd.setGuest(nil);
 
                 this.sharingService.save(sharingToAdd);
+                residence.getSharings().add(sharingToAdd);
                 response.put("message", "Sharing created!");
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             }
@@ -126,4 +128,74 @@ public class SharingController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+    @GetMapping("/bookings")
+    public ResponseEntity<?> getBookings(@RequestHeader(name = "Authorization") String jwt) {
+        try {
+            JSONObject response = new JSONObject();
+            List<JSONObject> bookings = new ArrayList<>();
+            String identity = jwtDecoder.decode(jwt.substring(7)).getSubject();
+            Long userId = this.userService.findIdByIdentity(identity);
+            List<Sharing> userBookings = this.sharingService.findBookings(userId);
+            for (Sharing booking : userBookings) {
+                JSONObject bookingResponse = new JSONObject();
+                bookingResponse.put("sharing_id", booking.getId());
+                bookingResponse.put("title", booking.getTitle());
+                bookingResponse.put("description", booking.getDescription());
+                bookingResponse.put("name", booking.getResidence().getUser().getName());
+                bookingResponse.put("email", booking.getResidence().getUser().getEmail());
+                bookingResponse.put("address", booking.getResidence().getAddress());
+                bookingResponse.put("county", booking.getResidence().getCounty());
+                bookingResponse.put("city", booking.getResidence().getCity());
+                bookingResponse.put("capacity", booking.getCapacity());
+                bookingResponse.put("start_datetime", booking.getStartDateTime());
+                if (booking.getEndDateTime() != null) {
+                    bookingResponse.put("end_datetime", booking.getEndDateTime());
+                }
+                bookings.add(bookingResponse);
+            }
+            response.put("bookings", bookings);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/accept")
+    public ResponseEntity<?> accept(@RequestHeader(name = "Authorization") String jwt, @RequestBody Map<String, Object> request) {
+        try {
+            JSONObject response = new JSONObject();
+            if (!request.containsKey("sharing_id") || !request.containsKey("capacity")) {
+                String failureMessage = "Missing required credentials!";
+                response.put("message", failureMessage);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            } else {
+                String identity = jwtDecoder.decode(jwt.substring(7)).getSubject();
+                User guest = this.userService.findByIdentity(identity);
+                Integer capacity = Integer.parseInt(String.valueOf(request.get("capacity")));
+                Long id = Long.parseLong(String.valueOf(request.get("sharing_id")));
+                Sharing toAccept = this.sharingService.findById(id);
+
+                if (capacity < toAccept.getResidence().getMinCapacity() || capacity > toAccept.getResidence().getMaxCapacity()) {
+                    String failureMessage = "Invalid capacity!";
+                    response.put("message", failureMessage);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                }
+                toAccept.setCapacity(capacity);
+
+                java.util.Date date = TimeFormatter.StringToDate();
+                java.sql.Timestamp startDateTime = new java.sql.Timestamp(date.getTime());
+                toAccept.setStartDateTime(startDateTime);
+
+                toAccept.setGuest(guest);
+
+                this.sharingService.save(toAccept);
+                response.put("message", "Sharing accepted!");
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 }
