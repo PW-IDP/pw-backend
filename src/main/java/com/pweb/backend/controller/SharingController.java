@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -92,6 +93,35 @@ public class SharingController {
                 response.put("message", "Sharing created!");
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getAvailableOffers")
+    public ResponseEntity<?> getAvailableOffers(@RequestHeader(name = "Authorization") String jwt) {
+        try {
+            JSONObject response = new JSONObject();
+            List<JSONObject> sharings = new ArrayList<>();
+            String identity = jwtDecoder.decode(jwt.substring(7)).getSubject();
+            Long userId = this.userService.findIdByIdentity(identity);
+            List<Sharing> availableSharings = this.sharingService.findAvailableSharings(userId);
+            for (Sharing availableSharing : availableSharings) {
+                JSONObject sharingResponse = new JSONObject();
+                sharingResponse.put("sharing_id", availableSharing.getId());
+                sharingResponse.put("title", availableSharing.getTitle());
+                sharingResponse.put("description", availableSharing.getDescription());
+                sharingResponse.put("name", availableSharing.getResidence().getUser().getName());
+                sharingResponse.put("email", availableSharing.getResidence().getUser().getEmail());
+                sharingResponse.put("address", availableSharing.getResidence().getAddress());
+                sharingResponse.put("county", availableSharing.getResidence().getCounty());
+                sharingResponse.put("city", availableSharing.getResidence().getCity());
+                sharingResponse.put("min_capacity", availableSharing.getResidence().getMinCapacity());
+                sharingResponse.put("max_capacity", availableSharing.getResidence().getMaxCapacity());
+                sharings.add(sharingResponse);
+            }
+            response.put("avaialable_offers", sharings);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
