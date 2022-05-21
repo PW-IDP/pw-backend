@@ -37,6 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers("/api/test-db/*").permitAll()
                 .mvcMatchers("/api/public").permitAll()
                 .mvcMatchers("/api/user/save").authenticated()
+                .mvcMatchers("/api/user/statistics/*").authenticated()
                 .mvcMatchers("/api/residence/*").authenticated()
                 .mvcMatchers("/api/sharing/*").authenticated()
                 .mvcMatchers("/api/user/admin/*").hasAuthority("SCOPE_project:admin")
