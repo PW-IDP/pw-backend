@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping(path = "/residence")
 public class ResidenceController {
 
