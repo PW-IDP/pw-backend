@@ -2,7 +2,9 @@ package com.pweb.backend.controller;
 
 import com.nimbusds.jose.shaded.json.JSONObject;
 import com.pweb.backend.model.Residence;
+import com.pweb.backend.model.Sharing;
 import com.pweb.backend.service.ResidenceService;
+import com.pweb.backend.service.SharingService;
 import com.pweb.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,9 @@ public class ResidenceController {
     ResidenceService residenceService;
 
     @Autowired
+    SharingService sharingService;
+
+    @Autowired
     UserService userService;
 
     @PostMapping(path = "/add")
@@ -47,6 +52,11 @@ public class ResidenceController {
                 } else {
                     Integer minCapacity = Integer.parseInt(String.valueOf(request.get("min_capacity")));
                     Integer maxCapacity = Integer.parseInt(String.valueOf(request.get("max_capacity")));
+                    if (minCapacity > maxCapacity) {
+                        String failureMessage = "Minimum capacity is greater than the maximum capacity!";
+                        response.put("message", failureMessage);
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                    }
                     String address = String.valueOf(request.get("address"));
                     String county = String.valueOf(request.get("county"));
                     String city = String.valueOf(request.get("city"));
@@ -81,6 +91,16 @@ public class ResidenceController {
             List<Residence> userResidences = this.residenceService.findAllResidencesFromUser(userId);
             for (Residence residence : userResidences) {
                 JSONObject residenceResponse = new JSONObject();
+                for (Sharing sharing : residence.getSharings()) {
+                    if (sharing.getStartDateTime() != null && sharing.getEndDateTime() == null) {
+                        JSONObject guest = new JSONObject();
+                        guest.put("name", sharing.getGuest().getName());
+                        guest.put("email", sharing.getGuest().getEmail());
+                        guest.put("start_datetime", sharing.getStartDateTime());
+                        residenceResponse.put("guest", guest);
+                        break;
+                    }
+                }
                 residenceResponse.put("residence_id", residence.getId());
                 residenceResponse.put("name", residence.getName());
                 residenceResponse.put("address", residence.getAddress());

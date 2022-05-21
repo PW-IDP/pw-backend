@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 public class Sharing {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "residence_id")
+    @Column(name = "sharing_id")
     private Long id;
 
     @ManyToOne
@@ -24,7 +24,7 @@ public class Sharing {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "start_datetime")

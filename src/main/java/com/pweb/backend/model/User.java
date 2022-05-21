@@ -1,7 +1,6 @@
 package com.pweb.backend.model;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
 import java.util.Set;
 
 @Entity
@@ -15,7 +14,6 @@ public class User {
     @Column(name = "identity", unique = true)
     private String identity;
 
-    @Email
     @Column(name = "email")
     private String email;
 

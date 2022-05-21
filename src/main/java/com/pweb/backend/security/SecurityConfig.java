@@ -1,4 +1,5 @@
 package com.pweb.backend.security;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,6 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers("/api/public").permitAll()
                 .mvcMatchers("/api/user/save").authenticated()
                 .mvcMatchers("/api/residence/*").authenticated()
+                .mvcMatchers("/api/sharing/*").authenticated()
                 .mvcMatchers("/api/user/admin/*").hasAuthority("SCOPE_project:admin")
                 .and().cors()
                 .and().oauth2ResourceServer().jwt();
