@@ -172,6 +172,7 @@ public class SharingController {
             for (Sharing offer : userOffers) {
                 JSONObject offerResponse = new JSONObject();
                 offerResponse.put("sharing_id", offer.getId());
+                offerResponse.put("residence_id", offer.getResidence().getId());
                 offerResponse.put("title", offer.getTitle());
                 offerResponse.put("description", offer.getDescription());
                 offerResponse.put("name", offer.getResidence().getUser().getName());

@@ -54,6 +54,43 @@ public class SharingService {
         return toReturn;
     }
 
+    public List<Sharing> findAvailableOffersForAdmin() {
+        List<Sharing> totalSharings = this.sharingRepository.findAll();
+        List<Sharing> toReturn = new ArrayList<>();
+        for (Sharing sharing : totalSharings) {
+            if (sharing.getStartDateTime() == null && sharing.getEndDateTime() == null) {
+                toReturn.add(sharing);
+            }
+        }
+        return toReturn;
+    }
+
+    public Integer getHelpedPeople() {
+        List<Sharing> totalSharings = this.sharingRepository.findAll();
+        Integer helpedPeople = 0;
+        for (Sharing sharing : totalSharings) {
+            if (sharing.getStartDateTime() != null) {
+                helpedPeople += sharing.getCapacity();
+            }
+        }
+        return helpedPeople;
+    }
+
+    public Integer getAllOffers() {
+        return this.sharingRepository.findAll().size();
+    }
+
+    public Integer getAcceptedOffers() {
+        List<Sharing> totalSharings = this.sharingRepository.findAll();
+        List<Sharing> toReturn = new ArrayList<>();
+        for (Sharing sharing : totalSharings) {
+            if (sharing.getStartDateTime() != null) {
+                toReturn.add(sharing);
+            }
+        }
+        return toReturn.size();
+    }
+
     public List<Sharing> findBookings(Long userId) {
         return this.sharingRepository.findBookings(userId);
     }

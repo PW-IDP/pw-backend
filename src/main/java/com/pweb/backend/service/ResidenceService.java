@@ -5,6 +5,8 @@ import com.pweb.backend.repository.ResidenceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,19 @@ public class ResidenceService {
 
     public Residence findById(Long id) {
         return this.residenceRepository.findById(id).orElse(null);
+    }
+
+    public Integer getAllResidences() {
+        return this.residenceRepository.findAll().size();
+    }
+
+    public Integer getAllHosts() {
+        List<Residence> totalResidences = this.residenceRepository.findAll();
+        List<Long> users = new ArrayList<>();
+        for (Residence residence : totalResidences) {
+            users.add(residence.getUser().getId());
+        }
+        return new ArrayList<>(new LinkedHashSet<>(users)).size();
     }
 
     @Transactional
