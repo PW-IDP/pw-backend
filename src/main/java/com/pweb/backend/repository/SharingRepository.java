@@ -13,7 +13,7 @@ public interface SharingRepository extends JpaRepository<Sharing, Long> {
     @Query(value = "SELECT * FROM sharings s WHERE s.residence_id = :residence", nativeQuery = true)
     List<Sharing> findSharingsByResidence(Long residence);
 
-    @Query(value = "SELECT * FROM sharings s WHERE s.user_id = :guest", nativeQuery = true)
+    @Query(value = "SELECT * FROM sharings s WHERE s.user_id = :guest AND s.start_datetime IS NOT NULL", nativeQuery = true)
     List<Sharing> findBookings(Long guest);
 
     @Modifying
