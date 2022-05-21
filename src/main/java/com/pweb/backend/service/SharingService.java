@@ -3,6 +3,7 @@ package com.pweb.backend.service;
 import com.pweb.backend.model.Sharing;
 import com.pweb.backend.repository.SharingRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +41,30 @@ public class SharingService {
         return toReturn;
     }
 
+    public List<Sharing> findPublishedOffers(Long userId) {
+        List<Sharing> totalSharings = this.sharingRepository.findAll();
+        List<Sharing> toReturn = new ArrayList<>();
+        for (Sharing sharing : totalSharings) {
+            if (Objects.equals(sharing.getResidence().getUser().getId(), userId)) {
+                if (sharing.getStartDateTime() == null && sharing.getEndDateTime() == null) {
+                    toReturn.add(sharing);
+                }
+            }
+        }
+        return toReturn;
+    }
+
     public List<Sharing> findBookings(Long userId) {
         return this.sharingRepository.findBookings(userId);
     }
 
     public Sharing findById(Long id) {
-        return this.sharingRepository.findById(id).orElseThrow();
+        return this.sharingRepository.findById(id).orElse(null);
+    }
+
+    @Transactional
+    public void deleteSharing(Long id) {
+        this.sharingRepository.deleteSharing(id);
     }
 
     public void save(Sharing sharing) {

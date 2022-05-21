@@ -161,6 +161,35 @@ public class SharingController {
         }
     }
 
+    @GetMapping("/offers")
+    public ResponseEntity<?> getOffers(@RequestHeader(name = "Authorization") String jwt) {
+        try {
+            JSONObject response = new JSONObject();
+            List<JSONObject> offers = new ArrayList<>();
+            String identity = jwtDecoder.decode(jwt.substring(7)).getSubject();
+            Long userId = this.userService.findIdByIdentity(identity);
+            List<Sharing> userOffers = this.sharingService.findPublishedOffers(userId);
+            for (Sharing offer : userOffers) {
+                JSONObject offerResponse = new JSONObject();
+                offerResponse.put("sharing_id", offer.getId());
+                offerResponse.put("title", offer.getTitle());
+                offerResponse.put("description", offer.getDescription());
+                offerResponse.put("name", offer.getResidence().getUser().getName());
+                offerResponse.put("email", offer.getResidence().getUser().getEmail());
+                offerResponse.put("address", offer.getResidence().getAddress());
+                offerResponse.put("county", offer.getResidence().getCounty());
+                offerResponse.put("city", offer.getResidence().getCity());
+                offerResponse.put("min_capacity", offer.getResidence().getMinCapacity());
+                offerResponse.put("max_capacity", offer.getResidence().getMaxCapacity());
+                offers.add(offerResponse);
+            }
+            response.put("offers", offers);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @PatchMapping("/accept")
     public ResponseEntity<?> accept(@RequestHeader(name = "Authorization") String jwt, @RequestBody Map<String, Object> request) {
         try {
@@ -192,6 +221,87 @@ public class SharingController {
                 this.sharingService.save(toAccept);
                 response.put("message", "Sharing accepted!");
                 return ResponseEntity.status(HttpStatus.OK).body(response);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/leave")
+    public ResponseEntity<?> leave(@RequestHeader(name = "Authorization") String jwt, @RequestBody Map<String, Object> request) {
+        try {
+            JSONObject response = new JSONObject();
+            if (!request.containsKey("sharing_id")) {
+                String failureMessage = "Missing required credentials!";
+                response.put("message", failureMessage);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            } else {
+                String identity = jwtDecoder.decode(jwt.substring(7)).getSubject();
+                User guest = this.userService.findByIdentity(identity);
+                Long sharingId = Long.parseLong(String.valueOf(request.get("sharing_id")));
+                Sharing toLeave = this.sharingService.findById(sharingId);
+                if (Objects.equals(toLeave.getGuest().getIdentity(), "nil") || toLeave.getStartDateTime() == null) {
+                    String failureMessage = "Cannot leave before accepting an offer!";
+                    response.put("message", failureMessage);
+                    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+                }
+                if (!Objects.equals(guest.getId(), toLeave.getGuest().getId())) {
+                    String failureMessage = "Invalid guest!";
+                    response.put("message", failureMessage);
+                    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(response);
+                }
+
+                if (toLeave.getEndDateTime() != null) {
+                    String failureMessage = "Invalid timing!";
+                    response.put("message", failureMessage);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                }
+
+                java.util.Date date = TimeFormatter.StringToDate();
+                java.sql.Timestamp endDateTime = new java.sql.Timestamp(date.getTime());
+                toLeave.setEndDateTime(endDateTime);
+
+                this.sharingService.save(toLeave);
+                response.put("message", "Left sharing!");
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteOffer(@RequestHeader(name = "Authorization") String jwt, @RequestBody Map<String, Object> request) {
+        try {
+            JSONObject response = new JSONObject();
+            if (!request.containsKey("sharing_id")) {
+                String failureMessage = "Missing required credentials!";
+                response.put("message", failureMessage);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            } else {
+                String identity = jwtDecoder.decode(jwt.substring(7)).getSubject();
+                Long userId = this.userService.findIdByIdentity(identity);
+                List<Sharing> userOffers = this.sharingService.findPublishedOffers(userId);
+                Long sharingId = Long.parseLong(String.valueOf(request.get("sharing_id")));
+                Sharing toDelete = this.sharingService.findById(sharingId);
+
+                if (toDelete == null) {
+                    String failureMessage = "This sharing does not exist!";
+                    response.put("message", failureMessage);
+                } else {
+                    for (Sharing userOffer : userOffers) {
+                        if (Objects.equals(userOffer.getId(), sharingId)) {
+                            this.sharingService.deleteSharing(sharingId);
+
+                            String successfulMessage = "Sharing successfully deleted.";
+                            response.put("message", successfulMessage);
+                            return ResponseEntity.status(HttpStatus.OK).body(response);
+                        }
+                    }
+                    String failureMessage = "This sharing does not belong to the user's published offers list!";
+                    response.put("message", failureMessage);
+                }
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
