@@ -74,7 +74,7 @@ public class UserController {
             response.put("total_helped_people", this.sharingService.getHelpedPeopleByUser(userId));
             Integer totalOffers = this.sharingService.getAllPublishedOffersByUser(userId);
             response.put("total_offers", totalOffers);
-            Integer acceptedOffers = this.sharingService.findBookings(userId).size();
+            Integer acceptedOffers = this.sharingService.getAcceptedOffersByUser(userId);
             response.put("accepted_offers", acceptedOffers);
             response.put("free_offers", totalOffers - acceptedOffers);
 
@@ -94,7 +94,6 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             } else {
                 List<Sharing> availableTotalSharings = this.sharingService.findAvailableOffersForAdmin();
-                ;
                 Long sharingId = Long.parseLong(String.valueOf(request.get("sharing_id")));
                 Sharing toDelete = this.sharingService.findById(sharingId);
                 if (toDelete == null) {
