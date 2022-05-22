@@ -30,9 +30,6 @@ public class ResidenceController {
     ResidenceService residenceService;
 
     @Autowired
-    SharingService sharingService;
-
-    @Autowired
     UserService userService;
 
     @PostMapping(path = "/add")
