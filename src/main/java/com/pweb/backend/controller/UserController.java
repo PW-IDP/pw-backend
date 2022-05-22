@@ -4,6 +4,7 @@ package com.pweb.backend.controller;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import com.pweb.backend.model.Sharing;
 import com.pweb.backend.model.User;
+import com.pweb.backend.service.EmailService;
 import com.pweb.backend.service.ResidenceService;
 import com.pweb.backend.service.SharingService;
 import com.pweb.backend.service.UserService;
@@ -32,6 +33,9 @@ public class UserController {
 
     @Autowired
     ResidenceService residenceService;
+
+    @Autowired
+    EmailService emailService;
 
     @PostMapping(path = "/save")
     public ResponseEntity<?> save(@RequestHeader(name = "Authorization") String jwt, @RequestBody Map<String, Object> request) {
@@ -103,6 +107,9 @@ public class UserController {
                     for (Sharing userOffer : availableTotalSharings) {
                         if (Objects.equals(userOffer.getId(), sharingId)) {
                             this.sharingService.deleteSharing(sharingId);
+                            emailService.sendEmail(toDelete.getResidence().getUser().getEmail(),
+                                    "Successfully deleted offer " + toDelete.getTitle() + " from user " +
+                                            toDelete.getResidence().getUser().getName(), "Sharing successfully deleted");
 
                             String successfulMessage = "Sharing successfully deleted.";
                             response.put("message", successfulMessage);

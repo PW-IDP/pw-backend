@@ -4,6 +4,7 @@ import com.nimbusds.jose.shaded.json.JSONObject;
 import com.pweb.backend.model.Residence;
 import com.pweb.backend.model.Sharing;
 import com.pweb.backend.model.User;
+import com.pweb.backend.service.EmailService;
 import com.pweb.backend.service.ResidenceService;
 import com.pweb.backend.service.SharingService;
 import com.pweb.backend.service.UserService;
@@ -34,6 +35,9 @@ public class SharingController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    EmailService emailService;
 
     @PostMapping(path = "/add")
     public ResponseEntity<?> addSharing(@RequestHeader(name = "Authorization") String jwt, @RequestBody Map<String, Object> request) {
@@ -220,6 +224,8 @@ public class SharingController {
                 toAccept.setGuest(guest);
 
                 this.sharingService.save(toAccept);
+                emailService.sendEmail(toAccept.getResidence().getUser().getEmail(), "Guest " + guest.getName() +
+                        " accepted your offer! You can contact him/her at " + guest.getEmail(), "A new offer accepted");
                 response.put("message", "Sharing accepted!");
                 return ResponseEntity.status(HttpStatus.OK).body(response);
             }
@@ -263,6 +269,8 @@ public class SharingController {
                 toLeave.setEndDateTime(endDateTime);
 
                 this.sharingService.save(toLeave);
+                emailService.sendEmail(toLeave.getResidence().getUser().getEmail(), "Guest " + guest.getName() +
+                        " left the residence!", "Left sharing");
                 response.put("message", "Left sharing!");
                 return ResponseEntity.status(HttpStatus.OK).body(response);
             }
